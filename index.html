@@ -87,37 +87,14 @@
         <section>
             <h2>Embedded MIDI Player</h2>
             <p>Listen to the example MIDI file:</p>
-            <button id="play-midi">Play MIDI</button>
+            <audio controls>
+                <source src="jingle_bells.mid" type="audio/midi">
+                Your browser does not support the audio element.
+            </audio>
         </section>
     </main>
     <footer>
         <p>&copy; 2024 Matthew Spragues. All rights reserved.</p>
     </footer>
-    <script>
-        document.getElementById('play-midi').addEventListener('click', async () => {
-            const response = await fetch('jingle_bells.mid');
-            const arrayBuffer = await response.arrayBuffer();
-            const midi = new Midi(arrayBuffer);
-
-            const context = new AudioContext();
-            const destination = context.destination;
-
-            midi.tracks.forEach(track => {
-                const now = context.currentTime;
-                track.notes.forEach(note => {
-                    const oscillator = context.createOscillator();
-                    oscillator.type = 'sine';
-                    oscillator.frequency.value = note.midi * 8; // Approximation
-
-                    const gainNode = context.createGain();
-                    gainNode.gain.value = 0.1;
-
-                    oscillator.connect(gainNode).connect(destination);
-                    oscillator.start(now + note.time);
-                    oscillator.stop(now + note.time + note.duration);
-                });
-            });
-        });
-    </script>
 </body>
 </html>
