@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matthew Sprague's MIDI Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.27/build/Midi.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background: #5c67f2;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        a {
+            color: #5c67f2;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-left: 4px solid #5c67f2;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #5c67f2;
+            color: white;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Matthew Sprague's MIDI Generator</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Project Objective</h2>
+            <p>The goal of this project is to create a Python-based tool that reads a custom DSL to author music and generates corresponding MIDI files. This allows users to easily script musical compositions with commands for tempo, instruments, and notes.</p>
+        </section>
+        <section>
+            <h2>GitHub Repository</h2>
+            <p>Check out my repo for the MIDI generator: <a href="https://github.com/Miserlou/chords2midi" target="_blank">GitHub: chords2midi</a></p>
+        </section>
+        <section>
+            <h2>Sample DSL Input</h2>
+            <pre>
+                tempo 120
+                instrument piano
+                note C4 1
+                note E4 1
+                note G4 1
+                chord Cmaj 2
+                rest 1
+                instrument guitar
+                chord Gmaj 2
+                note D4 1
+            </pre>
+        </section>
+        <section>
+            <h2>Download the Example MIDI File</h2>
+            <p><a href="example.mid" target="_blank">Download MIDI File</a></p>
+        </section>
+        <section>
+            <h2>Embedded MIDI Player</h2>
+            <p>Listen to the example MIDI file:</p>
+            <button id="play-midi">Play MIDI</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Matthew Spragues. All rights reserved.</p>
+    </footer>
+    <script>
+        document.getElementById('play-midi').addEventListener('click', async () => {
+            const response = await fetch('jingle_bells.mid');
+            const arrayBuffer = await response.arrayBuffer();
+            const midi = new Midi(arrayBuffer);
+
+            const context = new AudioContext();
+            const destination = context.destination;
+
+            midi.tracks.forEach(track => {
+                const now = context.currentTime;
+                track.notes.forEach(note => {
+                    const oscillator = context.createOscillator();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = note.midi * 8; // Approximation
+
+                    const gainNode = context.createGain();
+                    gainNode.gain.value = 0.1;
+
+                    oscillator.connect(gainNode).connect(destination);
+                    oscillator.start(now + note.time);
+                    oscillator.stop(now + note.time + note.duration);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
